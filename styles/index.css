@@ -1,0 +1,338 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+body {
+    margin: 0;
+    background-color: #fff;
+}
+
+.swal-loading .swal2-title {
+    color: #fff !important;
+}
+
+* {
+    font-family: Inter, sans-serif;
+    box-sizing: border-box;
+    line-height: 100%;
+}
+
+.wrapper {
+    position: relative;
+    text-align: center;
+    width: 500px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.join-form {
+    margin-top: 50px;
+}
+
+.join-form label {
+    font-size: 24px;
+    font-weight: 900;
+    width: 100%;
+    margin-bottom: 7px;
+    display: inline-block;
+    text-align: left;
+    padding: 0 20px;
+}
+
+.join-form input {
+    font-size: 24px;
+    font-weight: 600;
+    width: 100%;
+    margin-bottom: 30px;
+    text-align: left;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    outline: none;
+    border: 0;
+    background-color: #0001;
+    border-radius: 200vh;
+}
+
+.join-form input::placeholder {
+    text-transform: none;
+    color: #000;
+    opacity: 0.5;
+}
+
+.join-button-wrapper, .twitch-button-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    padding: 10px 20px;
+}
+
+.join-button-wrapper button, .twitch-button-wrapper button {
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+    border: 0;
+    outline: none;
+    padding: 10px 20px;
+    background-color: #0001;
+    border-radius: 200vh;
+    transition: all 0.2s ease;
+    transform: none;
+}
+
+.join-button-wrapper button:hover {
+    background-color: #0003;
+}
+
+.join-button-wrapper button:active {
+    background-color: #000b;
+    color: #fff;
+}
+
+.twitch-button-wrapper button {
+    background-color: #9147ffdd;
+    color: #fff;
+}
+
+.twitch-button-wrapper button:hover {
+    background-color: #9147ffaa;
+}
+
+.twitch-button-wrapper button:active {
+    background-color: #9147ff;
+}
+
+.join-form input.join-username-twitch {
+    color: #9147ff;
+}
+
+.twitch-button-wrapper button div.twitch-button-pfp {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    background-size: 100% 100%;
+    border-radius: 50%;
+    position: relative;
+    margin: 0 12px -5px 0;
+    transform: scale(1.1);
+}
+
+.twitch-button-notice {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.twitch-button-notice span {
+    font-weight: 900;
+}
+
+.content-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+}
+
+.content-topbar {
+    width: 100%;
+    padding: 10px 20px;
+    text-align: center;
+    background-color: #0002;
+}
+
+.content-topbar-name {
+    display: inline-block;
+    text-transform: capitalize;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.content-area {
+    flex-grow: 1;
+    display: inline-block;
+    width: 100%;
+    overflow-y: auto;
+}
+
+.content-region {
+    position: relative;
+    text-align: left;
+    width: 500px;
+    max-width: 100%;
+    min-height: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.logo-clock {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    border: 10px solid #000a;
+    border-radius: 50%;
+}
+
+@media only screen and (max-height: 500px) {
+    .logo-clock {
+        position: relative;
+        margin-top: 250px;
+        margin-bottom: -250px;
+    }
+}
+
+.logo-clock::after {
+    position: absolute;
+    content: "";
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    width: 20px;
+    height: 20px;
+    background-color: #222;
+    border-radius: 50%;
+}
+
+.logo-clock-hand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: bottom;
+    width: 0;
+    border: 5px solid #555;
+    border-radius: 10px;
+    z-index: 2;
+}
+
+.logo-clock-hand:nth-child(1) {
+    height: 110px;
+}
+
+.logo-clock-hand:nth-child(2) {
+    height: 150px;
+}
+
+.logo-clock-hand:nth-child(3) {
+    height: 170px;
+    border: 2px solid #f55;
+}
+
+.logo-clock-marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 30px;
+    border: 2px solid #0005;
+    border-radius: 10px;
+    z-index: 1;
+}
+
+.logo-clock-marker.logo-clock-marker-darker {
+    border-color: #000a;
+}
+
+.logo-clock-marker-number {
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    font-size: 40px;
+    text-align: center;
+    font-weight: 900;
+}
+
+.prompt-text {
+    font-size: 18px;
+    font-weight: 500;
+    padding: 10px 0;
+}
+
+.prompt-text div:first-child:nth-last-child(2) {
+    padding-bottom: 7px;
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0.5;
+}
+
+.choice-group {
+    position: relative;
+    padding: 5px 0;
+}
+
+.choice-group button {
+    width: 100%;
+    text-align: left;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    border: 0;
+    outline: none;
+    padding: 10px 20px;
+    background-color: #000d;
+    color: #fff;
+    border-radius: 19px;
+    transition: all 0.2s ease, opacity 0s ease;
+    transform: none;
+    overflow: hidden;
+    position: relative;
+}
+
+.choice-group button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.choice-group button:not(:disabled):hover {
+    background-color: #0001;
+    color: #000;
+}
+
+.choice-group button:not(:disabled):active {
+    background-color: #000b;
+    color: #fff;
+}
+
+.choice-group button.jack-attack-correct {
+    background-color: #0a0a;
+}
+
+.choice-group button.jack-attack-incorrect {
+    background-color: #a00a;
+}
+
+.jack-attack-timer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: #fff3;
+    border-radius: 0 19px 19px 0;
+    width: 100%;
+    height: 100%;
+    animation: jack-attack-timer linear forwards;
+}
+
+@keyframes jack-attack-timer {
+    100% {
+        width: 0;
+    }
+}
+
+.game-input {
+    font-size: 18px;
+    font-weight: 600;
+    width: 100%;
+    text-align: left;
+    padding: 10px 20px;
+    outline: none;
+    border: 0;
+    background-color: #0001;
+    border-radius: 200vh;
+}
+
+.game-input::placeholder {
+    color: #000;
+    opacity: 0.5;
+}

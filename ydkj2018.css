@@ -1,0 +1,576 @@
+@font-face {
+    font-family: Sagona Heavy;
+    src: url(/fonts/29a167f6cac78f779809d36ab6000b35.otf), url(/fonts/b54fa914700d41f6703b1dc5cbb6bc4b.woff) format("woff")
+}
+
+@font-face {
+    font-family: Franklin Gothic;
+    src: url(/fonts/4c297ef2eebcdfc9110317de0239953d.otf), url(/fonts/c545a20712be2e217c41f525e1c29ad0.woff) format("woff")
+}
+
+body {
+    background-color: #333
+}
+
+.binjpipeTos #swal2-content, .binjpipeTos #swal2-title {
+    font-weight: 400;
+    text-align: left;
+    font-family: sans-serif
+}
+
+.ydkj2018 {
+    font-weight: 400
+}
+
+.ydkj2018 .artifactButton {
+    background: url(/images/44d30ffc30431de0ea2031e3394f1fb0.png) no-repeat 50%/contain;
+    border: 0 solid #000
+}
+
+.ydkj2018 .doneText, .ydkj2018 .text {
+    font-family: Sagona Heavy;
+    font-size: 18px;
+    color: #fff
+}
+
+.ydkj2018 .secondary-text {
+    font-family: Franklin Gothic;
+    font-size: 18px
+}
+
+.ydkj2018 .playerName {
+    font-family: Sagona Heavy;
+    font-size: 24px;
+    text-transform: capitalize
+}
+
+.ydkj2018 .Lobby .button-group, .ydkj2018 .MakeSingleChoice .button-group {
+    transform: translate(0) scale(1);
+    font-family: Franklin Gothic;
+    padding: 5px 10px
+}
+
+.ydkj2018 .choice-button {
+    font-family: Franklin Gothic;
+    font-size: 24px;
+    background-color: #000;
+    color: #fff
+}
+
+.ydkj2018 .prompt {
+    padding: 15px 5px 0;
+    text-align: center
+}
+
+.ydkj2018 .choices {
+    padding: 0 20px
+}
+
+.ydkj2018 .Screw {
+    background: url(/images/3b116c987f22ca82408be7136d92a15d.jpg) 50% repeat-x;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    text-align: center
+}
+
+.ydkj2018 .Screw .header {
+    font-size: 28px;
+    line-height: 30px;
+    margin: 15px 5px
+}
+
+.ydkj2018 .Screw .secondary-text {
+    font-size: 28px;
+    color: #666
+}
+
+.ydkj2018 .Screw .content {
+    font-size: 28px
+}
+
+.ydkj2018 .Screw .screw-name {
+    background-color: #dd07db;
+    color: #fff;
+    display: inline-block;
+    font-size: 28px;
+    padding: 5px 25px;
+    text-transform: uppercase;
+    transform: rotate(3deg);
+    width: auto
+}
+
+.ydkj2018 .Screw .footer {
+    background: url(/images/7fb2a5b5e0119130dace5978a11e7325.png) bottom no-repeat;
+    background-size: contain;
+    color: #666;
+    font-size: 28px;
+    flex: 1 0 auto
+}
+
+.ydkj2018 .Screw .footer>span {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%
+}
+
+.ydkj2018 .Shortie {
+    background-color: #224966;
+    color: #01bbfe
+}
+
+.ydkj2018 .MakeSingleChoice.Shortie {
+    background: url(/images/7365bf4fadccfbab357f3f778cd707e4.jpg) 50% repeat-x;
+    background-size: cover
+}
+
+.ydkj2018 .Shortie .choice-button {
+    color: #01bbfe
+}
+
+.ydkj2018 .MakeSingleChoice .screw.button-group {
+    -webkit-clip-path: none;
+    clip-path: none;
+    width: auto
+}
+
+.ydkj2018 .screw .choice-button {
+    background-color: transparent;
+    background: url(/images/58e57b0b442a726817708bd0e2c8f008.png) top no-repeat;
+    padding-top: 50px;
+    color: #0070c0;
+    text-transform: none
+}
+
+.ydkj2018 .screw .choice-button[disabled] {
+    opacity: .2
+}
+
+.ydkj2018 .screw .choice-button div:first-child {
+    user-select: none;
+    color: #005ea7;
+    position: relative;
+    top: 0;
+    font-size: 44px;
+    background-color: #0bf;
+    border-radius: 0;
+    height: 60px;
+    width: 220px;
+    margin: auto;
+    text-align: center
+}
+
+.ydkj2018 .screw .choice-button div:nth-child(2) {
+    color: #01bbfe;
+    text-transform: none;
+    user-select: none;
+    position: relative;
+    top: 0
+}
+
+.ydkj2018.passcode .swal2-content {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none
+}
+
+.ydkj2018 .DisOrDat {
+    background-color: #3d3a65;
+    color: #9161f3
+}
+
+.ydkj2018 .DisOrDat .choice-button {
+    width: 47%;
+    color: #9161f3;
+    padding: 0
+}
+
+.ydkj2018 .DisOrDat.MakeSingleChoice {
+    background: url(/images/bacc93e0d87959ca74ebd4ca620bc15d.jpg) 50% repeat-x;
+    background-size: cover
+}
+
+.ydkj2018 .DisOrDat.MakeSingleChoice .choice-button {
+    height: 100px
+}
+
+.ydkj2018 .DisOrDat .button-group {
+    width: 47%;
+    min-width: 167px
+}
+
+.ydkj2018 .DisOrDat .button-group:nth-child(3) {
+    margin: 0 auto
+}
+
+.ydkj2018 .DisOrDat .button-group:nth-child(3) .choice-button {
+    margin: 25px;
+    height: 75px
+}
+
+.ydkj2018 .FuckYou, .ydkj2018 .Gibberish {
+    background-color: #324935;
+    color: #6dbf75;
+    background: url(/images/18eec7ff3d304f65afa07de6d105cf9f.jpg) 50% repeat-x;
+    background-size: cover
+}
+
+.ydkj2018 .FuckYou .prompt .text div:first-child, .ydkj2018 .Gibberish .prompt .text div:first-child {
+    color: #273828
+}
+
+.ydkj2018 .FuckYou .prompt .text div:nth-child(2), .ydkj2018 .Gibberish .prompt .text div:nth-child(2) {
+    font-size: 24px
+}
+
+.ydkj2018 .FuckYou .choices, .ydkj2018 .Gibberish .choices {
+    text-align: right
+}
+
+.ydkj2018 .FuckYou .choice-button, .ydkj2018 .Gibberish .choice-button {
+    font-family: Sagona Heavy;
+    color: #6dbf75;
+    padding: 0 15px;
+    text-transform: capitalize
+}
+
+.ydkj2018 .FuckYou .enterSingleTextDone, .ydkj2018 .Gibberish .enterSingleTextDone {
+    text-align: center
+}
+
+.ydkj2018 .FuckYou textarea, .ydkj2018 .Gibberish textarea {
+    font-family: Sagona Heavy;
+    border-radius: 0;
+    font-size: 24px
+}
+
+.ydkj2018 .MakeSingleChoice.chosen {
+    display: flex;
+    flex-direct: column;
+    text-align: center
+}
+
+.ydkj2018 .MakeSingleChoice.chosen .choices, .ydkj2018 .MakeSingleChoice.chosen .controller-content, .ydkj2018 .MakeSingleChoice.chosen .prompt, .ydkj2018 .MakeSingleChoice.chosen button {
+    display: none
+}
+
+.ydkj2018 .MakeSingleChoice.chosen .button-group.disabled {
+    transition: transform .5s;
+    transform: translate(-50%) scaleX(0)
+}
+
+.ydkj2018 .MakeSingleChoice.chosen .button-group.selected {
+    transform: translate(0) scale(1)
+}
+
+.ydkj2018 .MakeSingleChoice.chosen .logo-image {
+    margin: 0 auto;
+    width: 100%
+}
+
+.ydkj2018 .JackAttack, .ydkj2018 .Lobby, .ydkj2018 .PlayersChoice {
+    background-color: #5c1f48;
+    color: #fd64c9;
+    background: url(/images/b7bdbc2d8983ae286349bf27f99d42c5.jpg) 50% repeat-x;
+    background-size: cover
+}
+
+.ydkj2018 .JackAttack .prompt .text div:first-child, .ydkj2018 .Lobby .prompt .text div:first-child, .ydkj2018 .PlayersChoice .prompt .text div:first-child {
+    color: #5c1f48
+}
+
+.ydkj2018 .JackAttack .prompt .text div:nth-child(2), .ydkj2018 .Lobby .prompt .text div:nth-child(2), .ydkj2018 .PlayersChoice .prompt .text div:nth-child(2) {
+    font-size: 24px
+}
+
+.ydkj2018 .JackAttack .btn-group, .ydkj2018 .Lobby .btn-group, .ydkj2018 .PlayersChoice .btn-group {
+    float: right
+}
+
+.ydkj2018 .JackAttack .choice-button, .ydkj2018 .Lobby .choice-button, .ydkj2018 .PlayersChoice .choice-button {
+    color: #fff;
+    background-repeat: no-repeat;
+    animation-name: drain-right;
+    animation-duration: 10s;
+    animation-timing-function: linear;
+    animation-direction: normal;
+    animation-fill-mode: forwards
+}
+
+.ydkj2018 .JackAttack .selected .choice-button, .ydkj2018 .Lobby .selected .choice-button, .ydkj2018 .PlayersChoice .selected .choice-button {
+    background-color: #fff;
+    color: #000;
+    background-image: none
+}
+
+.ydkj2018 .JackAttack .choice-button[data-action=submit], .ydkj2018 .Lobby .choice-button[data-action=submit], .ydkj2018 .PlayersChoice .choice-button[data-action=submit] {
+    margin-top: 25px
+}
+
+.ydkj2018 .JackAttack .jack-attack-correct .choice-button, .ydkj2018 .Lobby .jack-attack-correct .choice-button, .ydkj2018 .PlayersChoice .jack-attack-correct .choice-button {
+    background-color: #0f9;
+    color: #018650;
+    opacity: 1
+}
+
+.ydkj2018 .JackAttack .jack-attack-incorrect .choice-button, .ydkj2018 .Lobby .jack-attack-incorrect .choice-button, .ydkj2018 .PlayersChoice .jack-attack-incorrect .choice-button {
+    background-color: #e02598;
+    color: #76124f;
+    opacity: 1
+}
+
+.ydkj2018 .Lobby {
+    background-image: url(/images/0fa3e3e586b92c785eb1efa97415f94a.png), url(/images/b7bdbc2d8983ae286349bf27f99d42c5.jpg);
+    background-size: contain, cover;
+    background-repeat: no-repeat, repeat-x;
+}
+
+.ydkj2018 .Lobby .lobbyTitle {
+    padding: 15px 0
+}
+
+.ydkj2018 .MakeSingleChoice.flipped .controller-content {
+    transition: transform .8s;
+    transform: rotate(540deg);
+    transition-timing-function: ease-out
+}
+
+.ydkj2018 .MakeSingleChoice.mirrored .controller-content {
+    transition: transform .8s;
+    transform: scaleX(-1);
+    transition-timing-function: ease-out
+}
+
+.ydkj2018 .MakeSingleChoice.screensaver .choices {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh
+}
+
+.ydkj2018 .MakeSingleChoice.screensaver .choices .button-group:first-child .choice-button {
+    animation-delay: -2.8s
+}
+
+.ydkj2018 .MakeSingleChoice.screensaver .choices .button-group:nth-child(2) .choice-button {
+    animation-delay: -4.6s
+}
+
+.ydkj2018 .MakeSingleChoice.screensaver .choices .button-group:nth-child(3) .choice-button {
+    animation-delay: -9.4s
+}
+
+.ydkj2018 .MakeSingleChoice.screensaver .choices .button-group.screw {
+    display: none
+}
+
+.ydkj2018 .MakeSingleChoice.screensaver .choice-button {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 50vw;
+    transform-style: preserve-3D;
+    -webkit-animation-name: float-landscape;
+    -webkit-animation-duration: 16s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction: alternate;
+    animation-name: float-landscape;
+    animation-duration: 16s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate
+}
+
+.ydkj2018 .playerTopBarView {
+    background-image: none!important
+}
+
+.ydkj2018 .playerTopBarView.JackAttack, .ydkj2018 .playerTopBarView.Lobby, .ydkj2018 .playerTopBarView.PlayersChoice {
+    background-color: #5c1f48;
+    color: #fd64c9
+}
+
+.ydkj2018 .playerTopBarView.chosen, .ydkj2018 .playerTopBarView.Logo, .ydkj2018 .playerTopBarView.Screw {
+    background-color: #3d3d3d;
+    color: #cecece
+}
+
+.ydkj2018 .playerTopBarView.FuckYou, .ydkj2018 .playerTopBarView.Gibberish {
+    background-color: #324935
+}
+
+.ydkj2018 .playerTopBarView.Shortie {
+    background-color: #224966;
+    color: #01bbfe
+}
+
+.ydkj2018 .FuckYou .prompt .text div:first-child {
+    color: #fff
+}
+
+.ydkj2018 .FuckYou .prompt .text div:nth-child(2) {
+    font-size: 14px
+}
+
+.ydkj2018 .FuckYou .title {
+    text-align: center;
+    font-size: 18px
+}
+
+.ydkj2018 .FuckYou .text {
+    text-align: left;
+    font-size: 14px
+}
+
+.ydkj2018 .FuckYou .text div {
+    padding: 10px 0
+}
+
+.ydkj2018 .Logo, .ydkj2018 .MakeSingleChoice.chosen {
+    background: url(/images/3b116c987f22ca82408be7136d92a15d.jpg) 50% repeat-x;
+    background-size: cover
+}
+
+.ydkj2018 .Logo .messageText, .ydkj2018 .MakeSingleChoice.chosen .messageText {
+    font-family: Sagona Heavy;
+    color: #fff
+}
+
+.ydkj2018 .logo-image {
+    background: top/contain no-repeat url(/images/4c155e65e7b76c925109ffec3ce2e7ee.png)
+}
+
+@keyframes drain {
+    0% {
+        background-position: 100% 0
+    }
+    to {
+        background-position: 0 0
+    }
+}
+
+@keyframes drain-right {
+    0% {
+        background-position: 0 0
+    }
+    to {
+        background-position: 100% 0
+    }
+}
+
+@-webkit-keyframes spin {
+    0% {
+        transform: rotate(0deg)
+    }
+    to {
+        transform: rotate(1turn)
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg)
+    }
+    25% {
+        transform: rotate(90deg)
+    }
+    50% {
+        transform: rotate(180deg)
+    }
+    75% {
+        transform: rotate(270deg)
+    }
+    to {
+        transform: rotate(1turn)
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translate(25vw)
+    }
+    5% {
+        transform: translate(50vw, 8vh)
+    }
+    15% {
+        transform: translateY(24vh)
+    }
+    25% {
+        transform: translate(50vw, 40vh)
+    }
+    35% {
+        transform: translateY(56vh)
+    }
+    45% {
+        transform: translate(50vw, 72vh)
+    }
+    50% {
+        transform: translate(25vw, 80vh)
+    }
+    55% {
+        transform: translateY(72vh)
+    }
+    65% {
+        transform: translate(50vw, 56vh)
+    }
+    75% {
+        transform: translateY(40vh)
+    }
+    85% {
+        transform: translate(50vw, 24vh)
+    }
+    95% {
+        transform: translateY(8vh)
+    }
+    to {
+        transform: translate(25vw)
+    }
+}
+
+@keyframes float-landscape {
+    0% {
+        transform: translate(0)
+    }
+    11% {
+        transform: translate(50vw, 36vh)
+    }
+    22% {
+        transform: translateY(71vh)
+    }
+    25% {
+        transform: translate(12.5vw, 80vh)
+    }
+    33% {
+        transform: translate(50vw, 53vh)
+    }
+    44% {
+        transform: translateY(18vh)
+    }
+    50% {
+        transform: translate(25vw)
+    }
+    56% {
+        transform: translate(50vw, 18vh)
+    }
+    66% {
+        transform: translateY(53vh)
+    }
+    75% {
+        transform: translate(37.5vw, 80vh)
+    }
+    78% {
+        transform: translate(50vw, 71vh)
+    }
+    89% {
+        transform: translateY(36vh)
+    }
+    to {
+        transform: translate(50vw)
+    }
+}
