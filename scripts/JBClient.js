@@ -214,18 +214,19 @@ var JBClient = class {
         this.connect();
         this.stats = {};
         if (localStorage.getItem("ejc-stats")) this.stats = JSON.parse(localStorage.getItem("ejc-stats"));
-        var setClockScale = () => {
-            var w = 500;
-            var p = 20;
-            var ew = 500;
+    }
 
-            var iw = Math.min(w, window.innerWidth) - p * 2;
-            var es = iw / ew;
-            var ss = Math.min(1, es);
-            this.clockScale = ss;
-        };
-        $(window).on("resize", () => setClockScale());
-        setClockScale();
+    setClockScale() {
+        var p = 20;
+        var w = this.region.innerWidth() - p * 2;
+        var h = this.region.innerHeight() - p * 2;
+        var ew = 500;
+        var eh = 500;
+
+        var es = w / ew;
+        var yr = h / eh;
+        var ss = Math.min(es, yr);
+        this.clockScale = ss;
     }
 
     connect() {
@@ -250,7 +251,8 @@ var JBClient = class {
                 //console.log("recv <-", JSON.stringify(JSON.parse(e.data), null, 2));
                 var r = this.parseResponseMessage(e);
                 if (r instanceof Reply) {
-                    this.onReply(r);
+                    console.log("Reply:", r);
+                    //this.onReply(r);
                 } else if (r instanceof Notification) {
                     if (r.result instanceof ClientWelcome) {
                         o = !0,
@@ -298,15 +300,37 @@ var JBClient = class {
         }
     }
 
+    handleAction(data) {
+        if (!data) return;
+        var mail = (d) => {
+            $(".choice-group button,.game-input").attr({ disabled: true });
+            this.domail(d);
+        };
+        if (typeof data == "function") return mail(data());
+        switch (data.action) {
+            case "open_url":
+                if (data.new) window.open(data.url, "_blank");
+                else window.location.href = data.url;
+                break;
+            default:
+                mail(data);
+                break;
+        }
+    }
+
     displayMessage(t, dt, or) {
         if (!dt) return;
         if (t == "room") this.room = dt;
         if (t == "player" && or) this.player = dt;
         var data = or ? this.player : dt;
         if ((t == "room" && !this.player) || (t == "player" && !this.room)) return;
-        console.log(t, this.player, this.room, data);
+        //console.log(t, this.player, this.room, data);
         if (this.clockAnimationFrame) cancelAnimationFrame(this.clockAnimationFrame);
-        var w = this.region.empty();
+        var w = this.region.empty().prop({ class: "content-region" });
+        w.addClass(this.appTag);
+        w.addClass(data.state);
+        var xtraclass = data.roundType || data.choiceType || data.choiceId;
+        if (xtraclass) w.addClass(xtraclass);
         var setHTMLorText = (e, o) => e[o.html || !o ? "html" : "text"](typeof o == "object" ? o.html || o.text : o);
         var pr = (t) => setHTMLorText($("<div/>").addClass("prompt-text"), t);
         var autoprompt = () => pr(data.prompt).appendTo(w);
@@ -320,8 +344,7 @@ var JBClient = class {
             if (t.className) b.addClass(t.className);
             b.on("click", () => {
                 if (t.disabled) return;
-                $(".choice-group button,.game-input").attr({ disabled: true });
-                if (a) this.domail(typeof a == "function" ? a() : a);
+                this.handleAction(a);
             });
             return { g: group, b, o: t };
         };
@@ -338,8 +361,7 @@ var JBClient = class {
                 placeholder: o.placeholder
             }).appendTo(w).on("keyup", (rr) => {
                 if (rr.key == "Enter") {
-                    $(".choice-group button,.game-input").attr({ disabled: true });
-                    this.domail({ action: "write", entry: e.val().trim() });
+                    this.handleAction({ action: "write", entry: e.val().trim() });
                 }
             });
             if (o.entry) e.attr({ disabled: true });
@@ -424,34 +446,38 @@ var JBClient = class {
                     } else display.prompt = "vip_waiting";
                 } else {
                     if (data.playerCanDoEpisodes) {
-                        display.choices.push({ html: "Episode manager coming soon", disabled: true, n: true });
+                        display.choices.push({ html: "vip_episodes_missing", disabled: true });
                     }
                     if (this.room.canChangeName) display.choices.push({ html: "button_changename", action: "changeName" });
                     if (data.choices) display.choices.push(...data.choices);
                 }
+                if (this.room.artifact && !this.room.gameIsStarting) display.choices.push({ html: "button_artifact", oaction: { action: "open_url", new: true, url: "https://games.jackbox.tv/artifact/".concat(this.room.artifact.categoryId, "/", this.room.artifact.artifactId, "/") } });
                 var strings = {
                     wait: "Sit back and relax!",
                     vip_waiting: "Waiting for all players to join",
                     vip_canStart: "Press this button when everybody has joined",
                     vip_cancel: "Press this button to cancel game start",
                     vip_postgame: "What would you like to do now?",
-                    vip_episodes_menu: "Episodes Menu",
-                    vip_episodes_unload: "Unload Episode",
-                    vip_episodes_report: "Report Episode",
-                    vip_episodes_warning: "Warning: user generated content is not rated",
+                    vip_episodes_menu: "Episodes menu",
+                    vip_episodes_unload: "Unload episode",
+                    vip_episodes_report: "Report episode",
+                    vip_episodes_warning: "Warning: User-generated content is not rated",
                     vip_episodes_load: "Load an episode by id:",
-                    vip_episodes_select: "Or select an episode:",
+                    vip_episodes_select: "or select an episode:",
                     vip_episodes_back: "Back",
-                    vip_episodes_submit: "SUBMIT",
-                    vip_episodes_view_author: "View Author",
-                    button_start: "Everybody's In",
+                    vip_episodes_submit: "Submit",
+                    vip_episodes_view_author: "View author",
+                    button_start: "Everybody\u2019s in",
                     button_cancel: "Cancel",
-                    button_changename: "Change Name",
-                    button_sameplayers: "Same Players",
-                    button_newplayers: "New Players",
+                    button_changename: "Change name",
+                    button_sameplayers: "Same players",
+                    button_newplayers: "New players",
                     prompt_entername: "Enter your name",
                     prompt_choosecharacter: "Select your character",
-                    button_censorOptions: "Censor Options"
+                    button_censorOptions: "Censor options",
+                    /////////////////////////////////////////
+                    vip_episodes_missing: "Episode manager coming soon",
+                    button_artifact: "Open gallery"
                 };
                 display.prompt = strings[display.prompt];
                 display.choices.forEach((c) => {
@@ -463,6 +489,7 @@ var JBClient = class {
                     choices: display.choices
                 });
                 break;
+            case "Gameplay_Logo":
             case "Logo":
                 this.logoClock = $("<div/>").addClass("logo-clock").appendTo(w);
                 var genh = () => $("<div/>").addClass("logo-clock-hand").appendTo(this.logoClock);
@@ -660,6 +687,8 @@ var JBClient = class {
                     var name = this.role == "audience" ? "AUDIENCE" : e.name;
                     this.wrapper.append($("<div/>").addClass("content-topbar").append($("<div/>").addClass("content-topbar-name").html(name.toLowerCase())));
                     this.region = $("<div/>").addClass("content-region").appendTo($("<div/>").addClass("content-area").appendTo(this.wrapper));
+                    $(window).on("resize", () => this.setClockScale());
+                    this.setClockScale();
 
                     console.log("ClientWelcome", e);
 
