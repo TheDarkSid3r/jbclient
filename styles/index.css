@@ -175,6 +175,10 @@ body {
     border-radius: 50%;
 }
 
+.logo-clock.logo-clock-inactive {
+    opacity: 0.1;
+}
+
 .logo-clock::after {
     position: absolute;
     content: "";
@@ -236,6 +240,19 @@ body {
     font-weight: 900;
 }
 
+.logo-message {
+    z-index: 10;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 36px;
+    transform: translateY(-50%);
+    font-weight: 900;
+    padding: 0 20px;
+}
+
 .prompt-text {
     font-size: 18px;
     font-weight: 500;
@@ -289,6 +306,15 @@ body {
     color: #fff;
 }
 
+.choice-group.character-group {
+    width: auto;
+    padding: 5px 5px;
+}
+
+.choice-group.character-group button {
+    border-radius: 5px;
+}
+
 .game-input {
     font-size: 18px;
     font-weight: 600;
@@ -299,6 +325,7 @@ body {
     border: 0;
     background-color: #0001;
     border-radius: 200vh;
+    margin-bottom: 5px;
 }
 
 .game-input::placeholder {

@@ -94,15 +94,6 @@ var createError = (e, c) => {
         }
     });
 };
-var CountGroup = class {
-    constructor(t) {
-        this.choices = t.choices,
-            this.key = t.key
-    }
-    toString() {
-        return `CountGroup{\n\tchoices: ${this.choices}\n}`
-    }
-};
 var ObjectEntity = class {
     constructor(t) {
         this.key = t.key,
@@ -157,6 +148,25 @@ var OK = class {
         return "OK"
     }
 };
+var CountGroup = class {
+    constructor(t) {
+        this.choices = t.choices,
+            this.key = t.key
+    }
+    toString() {
+        return `CountGroup{\n\tchoices: ${this.choices}\n}`
+    }
+};
+var TextRing = class {
+    constructor(t) {
+        this.key = t.key,
+            this.elements = t.elements,
+            this.limit = t.limit
+    }
+    toString() {
+        return `TextRing{\n\telements: ${this.elements}\n}`
+    }
+};
 var JBClient = class {
     constructor(roomId, name) {
         var reconnect = localStorage.getItem("ejc-reconnect");
@@ -183,7 +193,25 @@ var JBClient = class {
         console.log(i);
         if (i.body && i.body.appTag) {
             var unsupported = [
-                { tag: "slingshoot", name: "Zeeple Dome", reasons: ["the flinging mechanic"] }
+                { tag: "slingshoot", name: "Zeeple Dome", reasons: ["flinging mechanic"] },
+                { tag: "blanky-blank", name: "Blather 'Round", reasons: ["sentence-creating mechanic"] },
+                { tag: "monstermingle", name: "Monster Seeking Monster", reasons: ["messaging mechanic"] },
+                { tag: "bombinterns", name: "Bomb Corp.", reasons: ["complicated bombs"] },
+                { tag: "triviadeath", name: "Trivia Murder Party", reasons: ["drawing", "killing floor assets"] },
+                { tag: "triviadeath2", name: "Trivia Murder Party 2", reasons: ["killing room assets"] },
+                { tag: "pollposition", name: "Guesspionage", reasons: ["percentage picker"] },
+                { tag: "survivetheinternet", name: "Survive The Internet", reasons: ["round-specific controller layouts"] },
+                { tag: "patentlystupid", name: "Patently Stupid", reasons: ["drawing", "amazing presentation tool"] },
+                { tag: "rolemodels", name: "Role Models", reasons: ["camera", "drawing", "drag-and-drop role selection"] },
+                { tag: "jackboxtalks", name: "Talking Points", reasons: ["camera", "drawing", "assistant image chooser", "Free Play presentation creator"] },
+                { tag: "pushthebutton", name: "Push The Button", reasons: ["drawing", "game-wide action buttons", "probe screen", "complicated tests"] },
+                { tag: "everyday", name: "The Devils and the Details", reasons: ["tasks"] },
+                { tag: "drawful", name: "Drawful", reasons: ["drawing"] },
+                { tag: "drawful2", name: "Drawful 2", reasons: ["drawing"] },
+                { tag: "drawful2international", name: "Drawful International", reasons: ["drawing"] },
+                { tag: "awshirt", name: "Tee K.O.", reasons: ["drawing"] },
+                { tag: "overdrawn", name: "Civic Doodle", reasons: ["drawing"] },
+                { tag: "worldchampions", name: "Champ'd Up", reasons: ["drawing"] }
             ];
             var unsobj = unsupported.find((s) => s.tag == i.body.appTag);
             if (unsobj) {
@@ -242,10 +270,12 @@ var JBClient = class {
             secret: this.secret
         });
         return new Promise((resolve, reject) => {
+            this.hasDisconnected = false;
+            this.forceClose = true;
             var o = !1;
             this.conn = new WebSocket(this.role === "audience" ? apiURL.concat("audience/", this.roomId, "/play?", params) : apiURL.concat("rooms/", this.roomId, "/play?", params), "ecast-v0");
             this.conn.onopen = console.log;
-            this.conn.onclose = (e) => o ? e.code == 1006 ? this.connect() : this.disconnect() : this.disconnect();
+            this.conn.onclose = (e) => o ? e.code == 1006 ? this.connect() : this.disconnect() : this.forceClose ? reject() : this.disconnect();
             this.conn.onerror = console.log;
             this.conn.onmessage = (e) => {
                 //console.log("recv <-", JSON.stringify(JSON.parse(e.data), null, 2));
@@ -302,9 +332,21 @@ var JBClient = class {
 
     handleAction(data) {
         if (!data) return;
+        if (this.role == "audience") {
+            var pickLikelyOptions = [data.key, data.choice, data.entry, data.val];
+            var likelyOption = null;
+            for (var x = 0; x < pickLikelyOptions.length; x++) if (pickLikelyOptions[x] != null) {
+                likelyOption = pickLikelyOptions[x].toString();
+                break;
+            }
+            this.incrementCountGroupCounter(this.sessionModulePrefix + " Vote", likelyOption);
+            this.displayMessage("room", { state: "Logo" });
+            return;
+        }
         var mail = (d) => {
             $(".choice-group button,.game-input").attr({ disabled: true });
-            this.domail(d);
+            if (d.modern) this.send(d.opcode, d);
+            else this.domail(d);
         };
         if (typeof data == "function") return mail(data());
         switch (data.action) {
@@ -320,10 +362,10 @@ var JBClient = class {
 
     displayMessage(t, dt, or) {
         if (!dt) return;
-        if (t == "room") this.room = dt;
+        if (t == "room" || t == "audiencePlayer") this.room = this.role == "audience" ? Object.assign(dt, dt.audience || {}) : dt;
         if (t == "player" && or) this.player = dt;
-        var data = or ? this.player : dt;
-        if ((t == "room" && !this.player) || (t == "player" && !this.room)) return;
+        var data = this.role == "audience" ? this.room : or ? this.player : dt;
+        if ((t == "room" && !this.player && this.role != "audience") || (t == "player" && !this.room)) return;
         //console.log(t, this.player, this.room, data);
         if (this.clockAnimationFrame) cancelAnimationFrame(this.clockAnimationFrame);
         var w = this.region.empty().prop({ class: "content-region" });
@@ -350,26 +392,31 @@ var JBClient = class {
         };
         var autochoice = (c) => {
             if (c || data.choices) return (c || data.choices).map((c, i) => {
-                var es = ch(c, c.oaction || { action: c.action || "choose", choice: i });
+                var ooe = c.oaction || { action: c.action || /* c.key ? c.key :  */"choose", choice: i, key: c.key };
+                var es = ch(c, ooe);
                 es.g.appendTo(w);
                 return es;
             });
         };
-        var input = (o) => {
+        var input = (o, cfire) => {
             var e = $("<input/>").addClass("game-input").attr({
                 maxlength: o.maxLength,
                 placeholder: o.placeholder
             }).appendTo(w).on("keyup", (rr) => {
                 if (rr.key == "Enter") {
-                    this.handleAction({ action: "write", entry: e.val().trim() });
+                    fire();
                 }
             });
+            var val = () => e.val().trim();
+            var fire = () => {
+                this.handleAction(cfire ? cfire() : data.textKey ? { key: data.textKey, val: val(), modern: true, opcode: "text/update" } : { action: "write", entry: val() });
+            };
             if (o.entry) e.attr({ disabled: true });
             if (o.error) {
                 $("<div/>").addClass("input-error").html(o.error).appendTo(w);
                 e.addClass("game-input-errored");
             }
-            return e;
+            return { fire, val };
         };
         var submit = (a, t) => {
             return autochoice([{
@@ -379,6 +426,7 @@ var JBClient = class {
         };
         switch (this.appTag) {
             case "ydkj2018":
+                this.sessionModulePrefix = "YDKJ2018";
                 switch (data.state) {
                     case "Lobby":
                         this.stats.jackattackscore = 0;
@@ -413,6 +461,26 @@ var JBClient = class {
                         return;
                 }
                 break;
+            case "quiplash3":
+                this.sessionModulePrefix = "quiplash3";
+                switch (data.state) {
+                    case "EnterTextList":
+                        if (data.doneText && data.entries) {
+                            pr(data.doneText).appendTo(w);
+                            return;
+                        }
+                        autoprompt();
+                        var is = [];
+                        var re = () => {
+                            return { action: "write", entries: is.map((e) => e.val()) };
+                        };
+                        for (var p = 0; p < data.fieldCount; p++) {
+                            is.push(input(data, re));
+                        }
+                        submit(re);
+                        return;
+                }
+                break;
         }
         switch (data.state) {
             case "Lobby":
@@ -444,13 +512,12 @@ var JBClient = class {
                             }
                         }
                     } else display.prompt = "vip_waiting";
-                } else {
-                    if (data.playerCanDoEpisodes) {
-                        display.choices.push({ html: "vip_episodes_missing", disabled: true });
-                    }
-                    if (this.room.canChangeName) display.choices.push({ html: "button_changename", action: "changeName" });
-                    if (data.choices) display.choices.push(...data.choices);
                 }
+                if (data.playerCanDoEpisodes) {
+                    display.choices.push({ html: "vip_episodes_missing", disabled: true });
+                }
+                if (this.room.canChangeName) display.choices.push({ html: "button_changename", action: "changeName" });
+                if (data.choices) display.choices.push(...data.choices);
                 if (this.room.artifact && !this.room.gameIsStarting) display.choices.push({ html: "button_artifact", oaction: { action: "open_url", new: true, url: "https://games.jackbox.tv/artifact/".concat(this.room.artifact.categoryId, "/", this.room.artifact.artifactId, "/") } });
                 var strings = {
                     wait: "Sit back and relax!",
@@ -483,15 +550,29 @@ var JBClient = class {
                 display.choices.forEach((c) => {
                     if (!c.n) c.html = strings[c.html];
                 })
-                this.displayMessage(t, {
+                this.displayMessage("player", {
                     state: "MakeSingleChoice",
                     prompt: { html: display.prompt },
                     choices: display.choices
                 });
+                if (this.room.characters && this.room.characters.length) {
+                    pr({ html: strings["prompt_choosecharacter"] }).appendTo(w);
+                    this.room.characters.forEach((c) => {
+                        var c = ch({
+                            html: c.name,
+                            disabled: c.selected || !c.available
+                        }, { action: "avatar", name: c.name });
+                        c.g.addClass("character-group").appendTo(w);
+                    });
+                }
                 break;
             case "Gameplay_Logo":
             case "Logo":
                 this.logoClock = $("<div/>").addClass("logo-clock").appendTo(w);
+                if (data.message) {
+                    this.logoClock.addClass("logo-clock-inactive");
+                    setHTMLorText($("<div/>").addClass("logo-message"), data.message).appendTo(w);
+                }
                 var genh = () => $("<div/>").addClass("logo-clock-hand").appendTo(this.logoClock);
                 var hh = genh();
                 var mh = genh();
@@ -519,13 +600,18 @@ var JBClient = class {
             case "MakeSingleChoice":
                 autoprompt();
                 autochoice();
+                if (data.actions) {
+
+                }
                 break;
             case "EnterSingleText":
+                if (data.doneText && data.entry) {
+                    pr(data.doneText).appendTo(w);
+                    return;
+                }
                 autoprompt();
                 var i = input(data);
-                submit(() => {
-                    return { action: "write", entry: i.val().trim() };
-                });
+                submit(() => i.fire());
                 break;
         }
     }
@@ -582,7 +668,7 @@ var JBClient = class {
                     message: e.message
                 });
             case "error":
-                if (e.code == 2010 && this.role != "audience" && this.audienceEnabled) {
+                if (2010 === e.code || 2009 === e.code && this.role != "audience" && this.audienceEnabled) {
                     swalLoading("Reconnecting");
                     this.role = "audience";
                     this.connect();
@@ -681,6 +767,7 @@ var JBClient = class {
                 });
             case "client/welcome":
                 {
+                    this.forceClose = false;
                     this.reconnect = "".concat(e.id, ":").concat(this.role, ":").concat(e.secret);
                     localStorage.setItem("ejc-reconnect", this.reconnect);
                     this.wrapper = $("<div/>").addClass("content-wrapper").appendTo(document.body);
@@ -940,7 +1027,7 @@ var JBClient = class {
             name: t,
             options: e
         });
-        return this.entities[t] = new g({
+        return this.entities[t] = new CountGroup({
             key: t,
             choices: e
         }),
@@ -984,7 +1071,7 @@ var JBClient = class {
             name: t,
             limit: e
         });
-        return this.entities[t] = new m({
+        return this.entities[t] = new TextRing({
             key: t,
             elements: [],
             limit: e
