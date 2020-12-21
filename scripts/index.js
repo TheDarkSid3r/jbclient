@@ -72,7 +72,7 @@ $(".join-form").on("submit", (e) => {
     if (!values.roomId || ridShort) return swalError(ridShort ? "Please enter a (full) room code." : "Please enter a room code.");
     if (!values.username) return swalError("Please enter a name.");
     swalLoading("Connecting");
-    new JBClient(values.roomId.toUpperCase(), values.username.toUpperCase());
+    window.cclient = new JBClient(values.roomId.toUpperCase(), values.username.toUpperCase());
     return false;
 });
 var initTwitchLogin = () => {

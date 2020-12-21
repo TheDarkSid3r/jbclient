@@ -192,6 +192,7 @@ var JBClient = class {
         var i = await n.json();
         console.log(i);
         if (i.body && i.body.appTag) {
+            // games below commented out as support is added
             var unsupported = [
                 { tag: "slingshoot", name: "Zeeple Dome", reasons: ["flinging mechanic"] },
                 { tag: "blanky-blank", name: "Blather 'Round", reasons: ["sentence-creating mechanic"] },
@@ -344,9 +345,9 @@ var JBClient = class {
             return;
         }
         var mail = (d) => {
-            $(".choice-group button,.game-input").attr({ disabled: true });
-            if (d.modern) this.send(d.opcode, d);
-            else this.domail(d);
+            if (!this.offDisable) $(".choice-group button,.game-input").attr({ disabled: true });
+            if (d && d.modern) this.send(d.opcode, d);
+            else if (d) this.domail(d);
         };
         if (typeof data == "function") return mail(data());
         switch (data.action) {
@@ -362,258 +363,406 @@ var JBClient = class {
 
     displayMessage(t, dt, or) {
         if (!dt) return;
-        if (t == "room" || t == "audiencePlayer") this.room = this.role == "audience" ? Object.assign(dt, dt.audience || {}) : dt;
+        if ((t == "room" || t == "audiencePlayer")) this.room = this.role == "audience" ? Object.assign(dt, dt.audience || {}) : dt;
         if (t == "player" && or) this.player = dt;
         var data = this.role == "audience" ? this.room : or ? this.player : dt;
         if ((t == "room" && !this.player && this.role != "audience") || (t == "player" && !this.room)) return;
         //console.log(t, this.player, this.room, data);
         if (this.clockAnimationFrame) cancelAnimationFrame(this.clockAnimationFrame);
-        var w = this.region.empty().prop({ class: "content-region" });
-        w.addClass(this.appTag);
-        w.addClass(data.state);
-        var xtraclass = data.roundType || data.choiceType || data.choiceId;
-        if (xtraclass) w.addClass(xtraclass);
-        var setHTMLorText = (e, o) => e[o.html || !o ? "html" : "text"](typeof o == "object" ? o.html || o.text : o);
-        var pr = (t) => setHTMLorText($("<div/>").addClass("prompt-text"), t);
-        var autoprompt = () => pr(data.prompt).appendTo(w);
-        var ch = (t, a) => {
-            var group = $("<div/>").addClass("choice-group");
-            var b = setHTMLorText($("<button/>").appendTo(group), t);
-            b.attr(filterObject({
-                disabled: t.disabled
-            }));
-            if (t.selected) b.addClass("selected");
-            if (t.className) b.addClass(t.className);
-            b.on("click", () => {
-                if (t.disabled) return;
-                this.handleAction(a);
-            });
-            return { g: group, b, o: t };
-        };
-        var autochoice = (c) => {
-            if (c || data.choices) return (c || data.choices).map((c, i) => {
-                var ooe = c.oaction || { action: c.action || /* c.key ? c.key :  */"choose", choice: i, key: c.key };
-                var es = ch(c, ooe);
-                es.g.appendTo(w);
-                return es;
-            });
-        };
-        var input = (o, cfire) => {
-            var e = $("<input/>").addClass("game-input").attr({
-                maxlength: o.maxLength,
-                placeholder: o.placeholder
-            }).appendTo(w).on("keyup", (rr) => {
-                if (rr.key == "Enter") {
-                    fire();
-                }
-            });
-            var val = () => e.val().trim();
-            var fire = () => {
-                this.handleAction(cfire ? cfire() : data.textKey ? { key: data.textKey, val: val(), modern: true, opcode: "text/update" } : { action: "write", entry: val() });
+        var w = null;
+        var doDisplay = (data) => {
+            var setHTMLorText = (e, o) => e[o.html || !o ? "html" : "text"](typeof o == "object" ? o.html || o.text : o);
+            var pr = (t) => setHTMLorText($("<div/>").addClass("prompt-text"), t);
+            var autoprompt = () => data.prompt ? pr(data.prompt).appendTo(w) : null;
+            var ch = (t, a) => {
+                var group = $("<div/>").addClass("choice-group");
+                var b = setHTMLorText($("<button/>").appendTo(group), t);
+                b.attr(filterObject({
+                    disabled: t.disabled
+                }));
+                if (t.selected) b.addClass("selected");
+                if (t.className) b.addClass(t.className);
+                b.on("click", () => {
+                    if (t.disabled) return;
+                    this.handleAction(a);
+                });
+                return { g: group, b, o: t };
             };
-            if (o.entry) e.attr({ disabled: true });
-            if (o.error) {
-                $("<div/>").addClass("input-error").html(o.error).appendTo(w);
-                e.addClass("game-input-errored");
-            }
-            return { fire, val };
-        };
-        var submit = (a, t) => {
-            return autochoice([{
-                html: t || "Submit",
-                oaction: a
-            }])[0];
-        };
-        switch (this.appTag) {
-            case "ydkj2018":
-                this.sessionModulePrefix = "YDKJ2018";
-                switch (data.state) {
-                    case "Lobby":
-                        this.stats.jackattackscore = 0;
-                        break;
-                    case "Logo":
-                        this.setStat("jackattackcollected", false, []);
-                        break;
-                    case "MakeSingleChoice":
-                        autoprompt();
-                        autochoice().forEach((c, ind) => {
-                            var i = c.o.timeInfo;
-                            if (i && i.startedGameTime) {
-                                var t = $("<div/>").addClass("jack-attack-timer").appendTo(c.b);
-                                var td = i.startedGameTime - i.currentGameTime;
-                                t.css({
-                                    width: "".concat(100 - Math.floor(td / i.totalTime * 100), "%"),
-                                    animationDuration: "".concat(i.totalTime, "ms"),
-                                    animationDelay: "".concat(td, "ms")
+            var autochoice = (c) => {
+                if (c || data.choices) return (c || data.choices).map((c, i) => {
+                    var ooe = c.oaction || { action: c.action || /* c.key ? c.key :  */"choose", choice: i, key: c.key };
+                    var es = ch(c, ooe);
+                    es.g.appendTo(w);
+                    return es;
+                });
+            };
+            var input = (o, cfire) => {
+                var e = $("<input/>").addClass("game-input").attr({
+                    maxlength: o.maxLength,
+                    placeholder: o.placeholder
+                }).appendTo(w).on("keyup", (rr) => {
+                    if (rr.key == "Enter") {
+                        fire();
+                    }
+                });
+                var val = () => e.val().trim();
+                var fire = () => {
+                    this.handleAction(o.submitf ? o.submitf(val()) : cfire ? cfire() : data.textKey ? { key: data.textKey, val: val(), modern: true, opcode: "text/update" } : { action: "write", entry: val() });
+                    if (o.clearOnSubmit) e.val("");
+                };
+                if (o.entry) e.attr({ disabled: true });
+                if (o.error) {
+                    $("<div/>").addClass("input-error").html(o.error).appendTo(w);
+                    e.addClass("game-input-errored");
+                }
+                if (o.onInput) e.on("input", () => o.onInput(val()));
+                return { fire, val };
+            };
+            var submit = (a, t) => {
+                return autochoice([{
+                    html: t || "Submit",
+                    oaction: a
+                }])[0];
+            };
+            w = this.region.empty().prop({ class: "content-region" });
+            w.addClass(this.appTag);
+            w.addClass(data.state);
+            var xtraclass = data.roundType || data.choiceType || data.choiceId;
+            if (xtraclass) w.addClass(xtraclass);
+            switch (this.appTag) {
+                case "ydkj2015":
+                    this.offDisable = true;
+                    var hasScrew = false;
+                    switch (data.state) {
+                        case "LoggedIn":
+                            this.room.gameCanStart = true;
+                            doDisplay({
+                                state: "Lobby",
+                                playerIsVIP: true,
+                                playerCanStartGame: true,
+                                startButtonAction: { button: "SCREW" }
+                            });
+                            return;
+                        case "WithScrew":
+                            hasScrew = true;
+                            break;
+                        case "BuzzedIn":
+                            if ("DisOrDat" === this.room.state || "DisDatBoth" === this.room.state || "JackAttack" === this.room.state) break;
+                            doDisplay({ state: "Logo" });
+                            return;
+                    }
+                    var b = (l, t) => {
+                        return { html: l, className: t, oaction: { button: t } };
+                    };
+                    if ("MakeSingleChoice" === data.state || "Logo" === data.state) break;
+                    console.log(this.room, this.player);
+                    switch (this.room.state) {
+                        case "WatchBigScreen":
+                            doDisplay({ state: "Logo" });
+                            return;
+                        case "Shortie":
+                            var choices = [b("Button Y", "ANS_1"), b("Button X", "ANS_2"), b("Button B", "ANS_3"), b("Button A", "ANS_4")];
+                            if (hasScrew) choices.push(b("SCREW", "SCREW"));
+                            doDisplay({
+                                state: "MakeSingleChoice",
+                                prompt: { html: "<div>Shortie question</div><div>Use the buttons below like a game controller.</div>" },
+                                choices
+                            });
+                            return;
+                        case "DisDatBoth":
+                        case "DisOrDat":
+                            var choices = [b("Button X", "ANS_2"), b("Button B", "ANS_3")];
+                            if ("DisDatBoth" === this.room.state) choices.push(b("Button A", "ANS_4"));
+                            doDisplay({
+                                state: "MakeSingleChoice",
+                                prompt: { html: "<div>Dis or Dat question</div><div>Use the buttons below like a game controller.</div>" },
+                                choices
+                            });
+                            return;
+                        case "JackAttack":
+                            var choices = [b("Button A", "ANS_4")];
+                            doDisplay({
+                                state: "MakeSingleChoice",
+                                prompt: { html: "<div>Jack Attack question</div><div>Press the button below to buzz in.</div>" },
+                                choices
+                            });
+                            return;
+                    }
+                    break;
+                case "wordspud":
+                    this.offDisable = true;
+                    var getLastWord = () => {
+                        var a = this.room.currentWord.split(" ");
+                        return a[a.length - 1];
+                    };
+                    if ("MakeSingleChoice" === data.state || "EnterSingleText" === data.state || "Lobby" === data.state || "Logo" === data.state) break;
+                    switch (this.room.state) {
+                        case "Lobby_WaitingForMore":
+                        case "Lobby_CanStart":
+                            this.room.gameCanStart = "Lobby_CanStart" === this.room.state;
+                            doDisplay({
+                                state: "Lobby",
+                                playerIsVIP: true,
+                                playerCanStartGame: true,
+                                startButtonAction: { startGame: true }
+                            });
+                            return;
+                        case "Vote":
+                            if (this.lastSpud === this.room.spud.toUpperCase()) {
+                                doDisplay({
+                                    state: "MakeSingleChoice",
+                                    prompt: { html: "Your word is being judged." },
+                                    choices: []
+                                });
+                                return;
+                            }
+                            doDisplay({
+                                state: "MakeSingleChoice",
+                                prompt: { html: "<div>Do you like it?</div><div>".concat(getLastWord(), " <span style='font-weight: 900;'>", this.room.spud, "</span></div>") },
+                                choices: [{ html: "Yes", oaction: { vote: 1 } }, { html: "No", oaction: { vote: -1 } }]
+                            });
+                            return;
+                        case "Gameplay":
+                            if (this.room.currentWord) {
+                                this.lastSpud = null;
+                                doDisplay({
+                                    state: "EnterSingleText",
+                                    prompt: { html: "<div>Add your own commentary</div><div>".concat(getLastWord(), "_____", "<div/>") },
+                                    maxLength: 50,
+                                    placeholder: "Type anything",
+                                    clearOnSubmit: true,
+                                    submitf: (v) => {
+                                        return { comment: v };
+                                    }
                                 });
                             }
-
-                            var cc = "jack-attack-correct";
-                            var ic = "jack-attack-incorrect";
-                            if ((c.o.className == cc || c.o.className == ic) && !this.stats.jackattackcollected.includes(ind)) {
-                                var mult = c.o.className == cc ? 1 : -1;
-                                var val = parseInt(c.o.html.replace(/[^0-9]/g, "")) * mult;
-                                this.setStat("jackattackscore", "total Jack Attack score", (this.stats.jackattackscore || 0) + val);
-                                this.stats.jackattackcollected.push(ind);
-                                this.setStat("jackattackcollected", false, this.stats.jackattackcollected);
-                            }
-                        });
-                        return;
-                }
-                break;
-            case "quiplash3":
-                this.sessionModulePrefix = "quiplash3";
-                switch (data.state) {
-                    case "EnterTextList":
-                        if (data.doneText && data.entries) {
-                            pr(data.doneText).appendTo(w);
+                            break;
+                        case "RoundOver":
+                            doDisplay({ state: "Logo" });
                             return;
-                        }
-                        autoprompt();
-                        var is = [];
-                        var re = () => {
-                            return { action: "write", entries: is.map((e) => e.val()) };
-                        };
-                        for (var p = 0; p < data.fieldCount; p++) {
-                            is.push(input(data, re));
-                        }
-                        submit(re);
-                        return;
-                }
-                break;
-        }
-        switch (data.state) {
-            case "Lobby":
-                var display = { prompt: "wait", choices: [] };
-                if (data.playerIsVIP) {
-                    if (this.room.gameCanStart) {
-                        if (data.playerCanStartGame) {
-                            if (this.room.gameIsStarting) {
-                                display.prompt = "vip_cancel";
-                                display.choices = [
-                                    { html: "button_cancel", action: "cancel" }
-                                ];
-                            } else {
-                                if (this.room.gameFinished) {
-                                    display.prompt = "vip_postgame";
+                        case "GameOver":
+                            doDisplay({
+                                state: "MakeSingleChoice",
+                                prompt: { html: "What do you want to do now?" },
+                                choices: [{ html: "Next round", action: "next" }, { html: "New game", action: "new" }]
+                            });
+                            return;
+                    }
+                    switch (data.state) {
+                        case "Gameplay_Enter":
+                            this.lastSpud = null;
+                            doDisplay({
+                                state: "EnterSingleText",
+                                prompt: { html: "<div>It\u2019s your turn!</div><div>".concat(getLastWord(), "_____", "<div/>") },
+                                maxLength: 32,
+                                placeholder: "Type something",
+                                submitf: (v) => {
+                                    return { spud: v.toUpperCase(), submitted: true };
+                                },
+                                onInput: (v) => {
+                                    var e = v.toUpperCase();
+                                    if (this.lastSpud === e) return;
+                                    this.domail({
+                                        spud: e,
+                                        submitted: false
+                                    });
+                                    this.lastSpud = e;
+                                }
+                            });
+                            return;
+                    }
+                    break;
+                case "ydkj2018":
+                    this.sessionModulePrefix = "YDKJ2018";
+                    switch (data.state) {
+                        case "Lobby":
+                            this.stats.jackattackscore = 0;
+                            break;
+                        case "Logo":
+                            this.setStat("jackattackcollected", false, []);
+                            break;
+                        case "MakeSingleChoice":
+                            autoprompt();
+                            autochoice().forEach((c, ind) => {
+                                var i = c.o.timeInfo;
+                                if (i && i.startedGameTime) {
+                                    var t = $("<div/>").addClass("jack-attack-timer").appendTo(c.b);
+                                    var td = i.startedGameTime - i.currentGameTime;
+                                    t.css({
+                                        width: "".concat(100 - Math.floor(td / i.totalTime * 100), "%"),
+                                        animationDuration: "".concat(i.totalTime, "ms"),
+                                        animationDelay: "".concat(td, "ms")
+                                    });
+                                }
+
+                                var cc = "jack-attack-correct";
+                                var ic = "jack-attack-incorrect";
+                                if ((c.o.className == cc || c.o.className == ic) && !this.stats.jackattackcollected.includes(ind)) {
+                                    var mult = c.o.className == cc ? 1 : -1;
+                                    var val = parseInt(c.o.html.replace(/[^0-9]/g, "")) * mult;
+                                    this.setStat("jackattackscore", "total Jack Attack score", (this.stats.jackattackscore || 0) + val);
+                                    this.stats.jackattackcollected.push(ind);
+                                    this.setStat("jackattackcollected", false, this.stats.jackattackcollected);
+                                }
+                            });
+                            return;
+                    }
+                    break;
+                case "quiplash3":
+                    this.sessionModulePrefix = "quiplash3";
+                    switch (data.state) {
+                        case "EnterTextList":
+                            if (data.doneText && data.entries) {
+                                pr(data.doneText).appendTo(w);
+                                return;
+                            }
+                            autoprompt();
+                            var is = [];
+                            var re = () => {
+                                return { action: "write", entries: is.map((e) => e.val()) };
+                            };
+                            for (var p = 0; p < data.fieldCount; p++) {
+                                is.push(input(data, re));
+                            }
+                            submit(re);
+                            return;
+                    }
+                    break;
+            }
+            switch (data.state) {
+                case "Lobby":
+                    var display = { prompt: "wait", choices: [] };
+                    if (data.playerIsVIP) {
+                        if (this.room.gameCanStart) {
+                            if (data.playerCanStartGame) {
+                                if (this.room.gameIsStarting) {
+                                    display.prompt = "vip_cancel";
                                     display.choices = [
-                                        { html: "button_sameplayers", action: "PostGame_Continue" },
-                                        { html: "button_newplayers", action: "PostGame_NewGame" }
+                                        { html: "button_cancel", action: "cancel" }
                                     ];
                                 } else {
-                                    display.prompt = "vip_canStart";
-                                    display.choices = [
-                                        { html: "button_start", action: "start" }
-                                    ];
-                                    if (data.playerCanCensor && data.censorablePlayers.length > 0) {
-                                        display.choices.push({ html: "button_censorOptions", action: "censorOptions" });
+                                    if (this.room.gameFinished) {
+                                        display.prompt = "vip_postgame";
+                                        display.choices = [
+                                            { html: "button_sameplayers", action: "PostGame_Continue" },
+                                            { html: "button_newplayers", action: "PostGame_NewGame" }
+                                        ];
+                                    } else {
+                                        display.prompt = "vip_canStart";
+                                        var csb = { html: "button_start", action: "start" };
+                                        if (data.startButtonAction) csb.oaction = data.startButtonAction;
+                                        display.choices = [csb];
+                                        if (data.playerCanCensor && data.censorablePlayers.length > 0) {
+                                            display.choices.push({ html: "button_censorOptions", action: "censorOptions" });
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } else display.prompt = "vip_waiting";
-                }
-                if (data.playerCanDoEpisodes) {
-                    display.choices.push({ html: "vip_episodes_missing", disabled: true });
-                }
-                if (this.room.canChangeName) display.choices.push({ html: "button_changename", action: "changeName" });
-                if (data.choices) display.choices.push(...data.choices);
-                if (this.room.artifact && !this.room.gameIsStarting) display.choices.push({ html: "button_artifact", oaction: { action: "open_url", new: true, url: "https://games.jackbox.tv/artifact/".concat(this.room.artifact.categoryId, "/", this.room.artifact.artifactId, "/") } });
-                var strings = {
-                    wait: "Sit back and relax!",
-                    vip_waiting: "Waiting for all players to join",
-                    vip_canStart: "Press this button when everybody has joined",
-                    vip_cancel: "Press this button to cancel game start",
-                    vip_postgame: "What would you like to do now?",
-                    vip_episodes_menu: "Episodes menu",
-                    vip_episodes_unload: "Unload episode",
-                    vip_episodes_report: "Report episode",
-                    vip_episodes_warning: "Warning: User-generated content is not rated",
-                    vip_episodes_load: "Load an episode by id:",
-                    vip_episodes_select: "or select an episode:",
-                    vip_episodes_back: "Back",
-                    vip_episodes_submit: "Submit",
-                    vip_episodes_view_author: "View author",
-                    button_start: "Everybody\u2019s in",
-                    button_cancel: "Cancel",
-                    button_changename: "Change name",
-                    button_sameplayers: "Same players",
-                    button_newplayers: "New players",
-                    prompt_entername: "Enter your name",
-                    prompt_choosecharacter: "Select your character",
-                    button_censorOptions: "Censor options",
-                    /////////////////////////////////////////
-                    vip_episodes_missing: "Episode manager coming soon",
-                    button_artifact: "Open gallery"
-                };
-                display.prompt = strings[display.prompt];
-                display.choices.forEach((c) => {
-                    if (!c.n) c.html = strings[c.html];
-                })
-                this.displayMessage("player", {
-                    state: "MakeSingleChoice",
-                    prompt: { html: display.prompt },
-                    choices: display.choices
-                });
-                if (this.room.characters && this.room.characters.length) {
-                    pr({ html: strings["prompt_choosecharacter"] }).appendTo(w);
-                    this.room.characters.forEach((c) => {
-                        var c = ch({
-                            html: c.name,
-                            disabled: c.selected || !c.available
-                        }, { action: "avatar", name: c.name });
-                        c.g.addClass("character-group").appendTo(w);
-                    });
-                }
-                break;
-            case "Gameplay_Logo":
-            case "Logo":
-                this.logoClock = $("<div/>").addClass("logo-clock").appendTo(w);
-                if (data.message) {
-                    this.logoClock.addClass("logo-clock-inactive");
-                    setHTMLorText($("<div/>").addClass("logo-message"), data.message).appendTo(w);
-                }
-                var genh = () => $("<div/>").addClass("logo-clock-hand").appendTo(this.logoClock);
-                var hh = genh();
-                var mh = genh();
-                var sh = genh();
-                var setHand = (h, m, o) => h.css({ transform: "translate(-50%, -100%) rotate(".concat(m / o * 360, "deg)") });
-                var doHands = () => {
-                    this.logoClock.css({ transform: "translate(-50%, -50%) scale(".concat(this.clockScale, ")") })
-                    var d = new Date();
-                    var s = d.getSeconds();
-                    setHand(hh, d.getHours() + d.getMinutes() / 60 + s / 3600, 12);
-                    setHand(mh, d.getMinutes() + s / 60, 60);
-                    setHand(sh, s, 60);
-                    this.clockAnimationFrame = requestAnimationFrame(() => doHands());
-                };
-                doHands();
-                for (var x = 0; x < 60; x++) {
-                    var rot = x / 60 * 360;
-                    var el = $("<div/>").addClass("logo-clock-marker").css({ transform: "translate(-50%, -50%) rotate(".concat(rot, "deg) translateY(-210px)") }).appendTo(this.logoClock);
-                    if (x % 5 == 0) {
-                        el.addClass("logo-clock-marker-darker");
-                        $("<div/>").addClass("logo-clock-marker-number").html((x || 60) / 60 * 12).css({ transform: "translateX(-50%) rotate(-".concat(rot, "deg)") }).appendTo(el);
+                        } else display.prompt = "vip_waiting";
                     }
-                }
-                break;
-            case "MakeSingleChoice":
-                autoprompt();
-                autochoice();
-                if (data.actions) {
+                    if (data.playerCanDoEpisodes) {
+                        display.choices.push({ html: "vip_episodes_missing", disabled: true });
+                    }
+                    if (this.room.canChangeName) display.choices.push({ html: "button_changename", action: "changeName" });
+                    if (data.choices) display.choices.push(...data.choices);
+                    if (this.room.artifact && !this.room.gameIsStarting) display.choices.push({ html: "button_artifact", oaction: { action: "open_url", new: true, url: "https://games.jackbox.tv/artifact/".concat(this.room.artifact.categoryId, "/", this.room.artifact.artifactId, "/") } });
+                    var strings = {
+                        wait: "Sit back and relax!",
+                        vip_waiting: "Waiting for all players to join",
+                        vip_canStart: "Press this button when everybody has joined",
+                        vip_cancel: "Press this button to cancel game start",
+                        vip_postgame: "What would you like to do now?",
+                        vip_episodes_menu: "Episodes menu",
+                        vip_episodes_unload: "Unload episode",
+                        vip_episodes_report: "Report episode",
+                        vip_episodes_warning: "Warning: User-generated content is not rated",
+                        vip_episodes_load: "Load an episode by id:",
+                        vip_episodes_select: "or select an episode:",
+                        vip_episodes_back: "Back",
+                        vip_episodes_submit: "Submit",
+                        vip_episodes_view_author: "View author",
+                        button_start: "Everybody\u2019s in",
+                        button_cancel: "Cancel",
+                        button_changename: "Change name",
+                        button_sameplayers: "Same players",
+                        button_newplayers: "New players",
+                        prompt_entername: "Enter your name",
+                        prompt_choosecharacter: "Select your character",
+                        button_censorOptions: "Censor options",
+                        /////////////////////////////////////////
+                        vip_episodes_missing: "Episode manager coming soon",
+                        button_artifact: "Open gallery"
+                    };
+                    display.prompt = strings[display.prompt];
+                    display.choices.forEach((c) => {
+                        if (!c.n) c.html = strings[c.html];
+                    })
+                    doDisplay({
+                        state: "MakeSingleChoice",
+                        prompt: { html: display.prompt },
+                        choices: display.choices
+                    });
+                    if (this.room.characters && this.room.characters.length) {
+                        pr({ html: strings["prompt_choosecharacter"] }).appendTo(w);
+                        this.room.characters.forEach((c) => {
+                            var c = ch({
+                                html: c.name,
+                                disabled: c.selected || !c.available
+                            }, { action: "avatar", name: c.name });
+                            c.g.addClass("character-group").appendTo(w);
+                        });
+                    }
+                    break;
+                case "Gameplay_Logo":
+                case "Logo":
+                    this.logoClock = $("<div/>").addClass("logo-clock").appendTo(w);
+                    if (data.message) {
+                        this.logoClock.addClass("logo-clock-inactive");
+                        setHTMLorText($("<div/>").addClass("logo-message"), data.message).appendTo(w);
+                    }
+                    var genh = () => $("<div/>").addClass("logo-clock-hand").appendTo(this.logoClock);
+                    var hh = genh();
+                    var mh = genh();
+                    var sh = genh();
+                    var setHand = (h, m, o) => h.css({ transform: "translate(-50%, -100%) rotate(".concat(m / o * 360, "deg)") });
+                    var doHands = () => {
+                        this.logoClock.css({ transform: "translate(-50%, -50%) scale(".concat(this.clockScale, ")") })
+                        var d = new Date();
+                        var s = d.getSeconds();
+                        setHand(hh, d.getHours() + d.getMinutes() / 60 + s / 3600, 12);
+                        setHand(mh, d.getMinutes() + s / 60, 60);
+                        setHand(sh, s, 60);
+                        this.clockAnimationFrame = requestAnimationFrame(() => doHands());
+                    };
+                    doHands();
+                    for (var x = 0; x < 60; x++) {
+                        var rot = x / 60 * 360;
+                        var el = $("<div/>").addClass("logo-clock-marker").css({ transform: "translate(-50%, -50%) rotate(".concat(rot, "deg) translateY(-210px)") }).appendTo(this.logoClock);
+                        if (x % 5 == 0) {
+                            el.addClass("logo-clock-marker-darker");
+                            $("<div/>").addClass("logo-clock-marker-number").html((x || 60) / 60 * 12).css({ transform: "translateX(-50%) rotate(-".concat(rot, "deg)") }).appendTo(el);
+                        }
+                    }
+                    break;
+                case "MakeSingleChoice":
+                    autoprompt();
+                    autochoice();
+                    if (data.actions) {
 
-                }
-                break;
-            case "EnterSingleText":
-                if (data.doneText && data.entry) {
-                    pr(data.doneText).appendTo(w);
-                    return;
-                }
-                autoprompt();
-                var i = input(data);
-                submit(() => i.fire());
-                break;
-        }
+                    }
+                    break;
+                case "EnterSingleText":
+                    if (data.doneText && data.entry) {
+                        pr(data.doneText).appendTo(w);
+                        return;
+                    }
+                    autoprompt();
+                    var i = input(data);
+                    submit(() => i.fire());
+                    break;
+            }
+        };
+        doDisplay(data);
     }
 
     setStat(id, name, value) {
