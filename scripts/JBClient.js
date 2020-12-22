@@ -208,7 +208,7 @@ var JBClient = class {
                 { tag: "pushthebutton", name: "Push The Button", reasons: ["drawing", "game-wide action buttons", "probe screen", "complicated tests"] },
                 { tag: "everyday", name: "The Devils and the Details", reasons: ["tasks"] },
                 { tag: "drawful", name: "Drawful", reasons: ["drawing"] },
-                { tag: "drawful2", name: "Drawful 2", reasons: ["drawing"] },
+                //{ tag: "drawful2", name: "Drawful 2", reasons: ["drawing"] },
                 { tag: "drawful2international", name: "Drawful International", reasons: ["drawing"] },
                 { tag: "awshirt", name: "Tee K.O.", reasons: ["drawing"] },
                 { tag: "overdrawn", name: "Civic Doodle", reasons: ["drawing"] },
@@ -572,6 +572,22 @@ var JBClient = class {
                             return;
                     }
                     break;
+                case "lieswatter":
+                    this.offDisable = true;
+                    if ("MakeSingleChoice" === data.state || "EnterSingleText" === data.state || "Lobby" === data.state || "Logo" === data.state) break;
+                    switch (this.room.state) {
+                        case "Lobby_WaitingForMore":
+                        case "Lobby_CanStart":
+                            this.room.gameCanStart = "Lobby_CanStart" === this.room.state;
+                            doDisplay({
+                                state: "Lobby",
+                                playerIsVIP: true,
+                                playerCanStartGame: true,
+                                startButtonAction: { startGame: true }
+                            });
+                            return;
+                    }
+                    break;
                 case "ydkj2018":
                     this.sessionModulePrefix = "YDKJ2018";
                     switch (data.state) {
@@ -759,6 +775,9 @@ var JBClient = class {
                     autoprompt();
                     var i = input(data);
                     submit(() => i.fire());
+                    break;
+                case "Draw":
+
                     break;
             }
         };
